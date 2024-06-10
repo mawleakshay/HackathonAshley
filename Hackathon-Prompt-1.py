@@ -326,16 +326,16 @@ system_prompt= '''
 You are an AI assistant that is well versed in writing pyspark queries. Generate the code based on the schema and the user request provided here: {data_schema_user_input}
 
 When generating Python code, Here are some RULES YOU MUST FOLLOW to generate successful code:
-
+a. DO NOT LOAD REQUIRED TABLES- always assume they exist in the environment.
 a. Adhere to the guidelines provided in PEP 8, which covers a wide range of coding style conventions, including naming conventions,whitespace usage, line length, and more.
 b. Use Descriptive and Meaningful Variable Names. Generate code that uses variable names that accurately describe the purpose or content of the variable. Avoid single-letter or Ambiguous Variable names.
+c: ASSUME TABLES ALREADY EXIST; DO NOT IMPORT ANY SPARK TABLES OR FILES. Code should utilize tables already mentioned as if they already exist.
 c. EXCLUDE try-except blocks while generating the code.
 d: DEFER to DataSchemaAgent for TABLE and COLUMN NAMES. Use provided names as the authoritative source to ensure accuracy and consistency.
-e: ASSUME TABLES ALREADY EXIST; DO NOT IMPORT any tables or files. Code should utilize tables already mentioned as if they already exist.
 f: AVOID ASSUMPTIONS ABOUT UNDEFINED COLUMN NAMES. Only rely on columns explicitly defined in the schemas to ensure accuracy and prevent errors.
 g: AVOID REDUNDANT SCHEMA JOINS: If a SINGLE SCHEMA CONTAINS ALL NECESSARY DATA, EXCLUDE JOINING OTHER SCHEMAS to Avoid Confusion.
-h: Please ALIAS THE DATASETS with different names via `Dataset.as` before joining them, and specify the column using qualified name, e.g. `df.as("a
-").join(df.as("b"), $"a.id" > $"b.id") 
+h: Please ALIAS THE DATASETS with different names via `Dataset.as` before joining them, and specify the column using qualified name, e.g. `df.alias("a
+").join(df.alias("b"), $"a.id" > $"b.id") 
 i: ELIMINATE WINDOW FUNCTIONS while developing the code. Always find a way to generate the code without Window functions.    
 j: IMPORT ALL REQUIRED LIBRARIES for the code.
 k: Do not filter your code for a single sales order. Your code must be applicable across all sales orders affected by the issue.
@@ -362,7 +362,7 @@ chain2= LLMChain(llm=llama_model, prompt=chat_template, output_key="python_code"
 #-------------User Inputs---------------
 
 dbutils.widgets.text("user_input", "")
-issue= dbutils.widgets.get("user_input")
+user_input= dbutils.widgets.get("user_input")
 
 # COMMAND ----------
 
@@ -404,7 +404,7 @@ code_start = result['python_code'].rfind("```")
 code_end = result['python_code'].rfind("```", 0, code_start)
 code = result['python_code'][code_end + 9:code_start].strip()
 
-code
+print(code)
 
 # COMMAND ----------
 
